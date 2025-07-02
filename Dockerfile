@@ -1,11 +1,12 @@
-FROM base-image-langchain-torch-huggingface-fastapi:latest
+# FROM base-image-langchain-torch-huggingface-fastapi:latest
+FROM python:3.12-slim
 
 WORKDIR  /app
 
-COPY app.py utils.py requirements.txt Amirali_Sahraei_CV_OLD.pdf ./
+COPY . .
 
-# RUN pip install --upgrade pip
-# RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
 
 EXPOSE 8000
