@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: resume-chatbot
-        image: amiralisahraei/fastapi-app-new-image:latest
+        image: 038462775601.dkr.ecr.us-east-1.amazonaws.com/fastapi-app-repo:latest
         # imagePullPolicy: Never
         ports:
         - containerPort: 8000

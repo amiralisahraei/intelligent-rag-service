@@ -21,7 +21,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t fastapi-app-new-image .
-          docker tag fastapi-app-new-image:latest 038462775601.dkr.ecr.us-east-1.amazonaws.com/fastapi-app-repo
+          docker tag fastapi-app-new-image:latest 038462775601.dkr.ecr.us-east-1.amazonaws.com/fastapi-app-repo:latest
 
       - name: Login to Amazon ECR
         run: |
@@ -29,7 +29,7 @@ jobs:
 
       - name: Push Docker image to ECR
         run: |
-          docker push 038462775601.dkr.ecr.us-east-1.amazonaws.com/fastapi-app-repo
+          docker push 038462775601.dkr.ecr.us-east-1.amazonaws.com/fastapi-app-repo:latest
 
       - name: Configure kubectl
         run: |
