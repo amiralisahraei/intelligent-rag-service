@@ -1,0 +1,7 @@
+app.ipynb
+__pycache__/
+venv_llm/
+.env
+deploy.sh
+base-dockerfile
+

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resume-chatbot
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: resume-chatbot
+  template:
+    metadata:
+      labels:
+        app: resume-chatbot
+    spec:
+      containers:
+      - name: resume-chatbot
+        image: amiralisahraei/fastapi-app-new-image:latest
+        # imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        env:
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: my-secret
+              key: GROQ_API_KEY
+        
