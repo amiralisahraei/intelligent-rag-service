@@ -1,8 +1,13 @@
 from sagemaker.huggingface import HuggingFace
 import sagemaker
+import os
 
 role = "arn:aws:iam::038462775601:role/service-role/AmazonSageMaker-ExecutionRole-20250303T193580"  # Replace with your actual ARN
 sess = sagemaker.Session()
+
+
+print(f"Current working directory: {os.getcwd()}")
+
 
 # Create a dummy file for input_data requirement
 # with open('dummy.txt', 'w') as f:
