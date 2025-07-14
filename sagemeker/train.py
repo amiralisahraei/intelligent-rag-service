@@ -10,8 +10,8 @@ from huggingface_hub import login
 import torch
 import os
 
-
-login("you-HF-token")  # Replace with your Hugging Face token
+HF_TOKEN = os.environ.get("HF_TOKEN")
+login(HF_TOKEN)  # Replace with your Hugging Face token
 
 # Load dataset directly from Hugging Face Hub
 print("Loading dataset from Hugging Face Hub...")
