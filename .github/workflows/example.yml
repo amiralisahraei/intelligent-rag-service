@@ -24,9 +24,16 @@ jobs:
         with:
           python-version: '3.12' 
       
-      - name: Run tests
+      - name: Install dependencies
         run: |
-          python test.py
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: train model
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python sagemeker/launch_training.py
       # - name: Build Docker image
       #   run: |
       #     docker build -t fastapi-app-new-image .
