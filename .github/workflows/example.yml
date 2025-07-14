@@ -37,11 +37,11 @@ jobs:
       #     python sagemeker/launch_training.py
 
       
-      # - name: Get Endpoint Name
-      #   id: get_endpoint_name
-      #   run: |
-      #     ENDPOINT_NAME=$(cat sagemeker/endpoint_name.txt)
-      #     echo "ENDPOINT_NAME=$ENDPOINT_NAME" >> $GITHUB_ENV
+      - name: Get Endpoint Name
+        id: get_endpoint_name
+        run: |
+          ENDPOINT_NAME="my-llm-endpoint"
+          echo "ENDPOINT_NAME=$ENDPOINT_NAME" >> $GITHUB_ENV
       
       # - name: Next Step - Use Endpoint Name
       #   run: |
@@ -63,8 +63,13 @@ jobs:
       - name: Configure kubectl
         run: |
           aws eks update-kubeconfig --region us-east-1 --name fastapi-cluster
+      
+      - name: Create a K&s secret
+        run: |
+          kubectl create secret generic my-secret \
+            --from-literal=ENDPOINT_NAME=${{ env.ENDPOINT_NAME }} \
 
       - name: Deploy to EKS
         run: |
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
+          kubectl apply -f K&s/deployment.yaml
+          kubectl apply -f K&s/service.yaml

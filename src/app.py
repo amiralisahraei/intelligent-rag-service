@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import requests
 from requests_aws4auth import AWS4Auth
 import boto3
+import os
 
 from utils import (
     extract_text_from_pdf,
@@ -36,7 +37,7 @@ awsauth = AWS4Auth(
     session_token=credentials.token
 )
 
-endpoint_name = 'huggingface-pytorch-inference-2025-07-13-15-08-32-113'
+endpoint_name = os.getenv('ENDPOINT_NAME')
 url = f"https://runtime.sagemaker.{region}.amazonaws.com/endpoints/{endpoint_name}/invocations"
 headers = { "Content-Type": "application/json" }
 
