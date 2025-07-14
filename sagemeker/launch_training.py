@@ -20,7 +20,7 @@ print(f"Current working directory: {os.getcwd()}")
 # Configure the estimator
 huggingface_estimator = HuggingFace(
     entry_point='train.py',
-    source_dir='.',
+    source_dir='sagemeker',
     instance_type='ml.g5.2xlarge',
     instance_count=1,
     role=role,
