@@ -10,9 +10,6 @@ from huggingface_hub import login
 import torch
 import os
 
-# HF_TOKEN = os.environ.get("HF_TOKEN")
-# login(HF_TOKEN)  # Replace with your Hugging Face token
-
 # Load dataset directly from Hugging Face Hub
 print("Loading dataset from Hugging Face Hub...")
 finetuning_dataset = load_dataset("AmiraliSH/my-qa-dataset")

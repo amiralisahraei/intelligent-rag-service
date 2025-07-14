@@ -1,21 +1,9 @@
-from sagemaker.huggingface import HuggingFace
+from sagemaker.huggingface import HuggingFace, HuggingFaceModel
 import sagemaker
 import os
 
 role = "arn:aws:iam::038462775601:role/service-role/AmazonSageMaker-ExecutionRole-20250303T193580"  # Replace with your actual ARN
 sess = sagemaker.Session()
-
-
-print(f"Current working directory: {os.getcwd()}")
-
-
-# Create a dummy file for input_data requirement
-# with open('dummy.txt', 'w') as f:
-#     f.write('This is a dummy file for SageMaker input requirement')
-
-# Upload dummy file to S3
-# bucket = sess.default_bucket()
-# dummy_s3_path = sess.upload_data(path='dummy.txt', bucket=bucket, key_prefix='dummy')
 
 # Configure the estimator
 huggingface_estimator = HuggingFace(
@@ -41,3 +29,25 @@ huggingface_estimator.fit(input_data)
 
 print("Training job completed!")
 print(f"Model artifacts: {huggingface_estimator.model_data}")
+
+
+# Create HuggingFace Model class
+huggingface_model = HuggingFaceModel(
+    model_data=huggingface_estimator.model_data,  # Path to your trained model artifacts
+    role=role,                                    # IAM role with permissions to create endpoint
+    transformers_version='4.37.0',
+    pytorch_version='2.1.0',
+    py_version='py310',
+    model_server_workers=1                        # Number of worker processes
+)
+
+
+# Deploy the model to an endpoint
+predictor = huggingface_model.deploy(
+    initial_instance_count=1,
+    instance_type="ml.g5.2xlarge",  # Choose an appropriate instance type
+    endpoint_name="my-llm-endpoint"  # Specify a unique endpoint name
+)
+
+print("Model deployed to endpoint successfully!")
+print(f"Endpoint name: {predictor.endpoint_name}")
