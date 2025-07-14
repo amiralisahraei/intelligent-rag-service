@@ -62,7 +62,7 @@ def llm(user_input: str, url: str, awsauth, headers: dict):
     }
 
     response = requests.post(url, auth=awsauth, json=data, headers=headers)
-    return json.loads(response.text)[0].get('generated_text', '')
+    return response
 
 def answer_question(question: str, vectorstore, url, awsauth, headers) -> str:
     context = retrieve_context(question, vectorstore)
