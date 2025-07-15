@@ -65,7 +65,9 @@ def llm(user_input: str, url: str, awsauth, headers: dict):
     print(30*"-")
     print(f"Raw response from SageMaker endpoint: {response.text}")  # Add this line
     print(30*"-")
-    return response
+    return {
+        "response": response.text,
+    }
 
 def answer_question(question: str, vectorstore, url, awsauth, headers) -> str:
     context = retrieve_context(question, vectorstore)
