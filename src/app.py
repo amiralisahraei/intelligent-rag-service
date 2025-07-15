@@ -7,13 +7,13 @@ from requests_aws4auth import AWS4Auth
 import boto3
 import os
 
-from utils import (
+from src.utils import (
     extract_text_from_pdf,
     split_text,
     create_vectorstore,
     retrieve_context,
     build_prompt,
-    llm,
+    llm,    
     get_llm_response,
     upload_to_s3
 )

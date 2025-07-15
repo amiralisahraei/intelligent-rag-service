@@ -46,8 +46,12 @@ huggingface_model = HuggingFaceModel(
 predictor = huggingface_model.deploy(
     initial_instance_count=1,
     instance_type="ml.g5.2xlarge",  # Choose an appropriate instance type
-    endpoint_name="my-llm-endpoint"  # Specify a unique endpoint name
+    # endpoint_name="my-llm-endpoint"  # Specify a unique endpoint name
 )
 
 print("Model deployed to endpoint successfully!")
 print(f"Endpoint name: {predictor.endpoint_name}")
+
+# Output the endpoint name to a file that GitHub Actions can read
+with open("endpoint_name.txt", "w") as f:
+    f.write(predictor.endpoint_name)
