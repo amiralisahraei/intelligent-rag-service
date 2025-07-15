@@ -1,6 +1,6 @@
 FROM amiralisahraei/base-image:latest
 
-# WORKDIR /app
+WORKDIR /app
 
 # Copy only the requirements file first to leverage Docker cache
 COPY . .
