@@ -62,9 +62,6 @@ def llm(user_input: str, url: str, awsauth, headers: dict):
     }
 
     response = requests.post(url, auth=awsauth, json=data, headers=headers)
-    # print(30*"-")
-    # print(f"Raw response from SageMaker endpoint: {response.text}")  # Add this line
-    # print(30*"-")
     parsed_response = json.loads(response.text)[0].get('generated_text', '')
     return {
         "response": parsed_response,
