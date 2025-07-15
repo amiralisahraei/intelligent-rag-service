@@ -40,7 +40,7 @@ jobs:
       - name: Get Endpoint Name
         id: get_endpoint_name
         run: |
-          ENDPOINT_NAME=$(cat sagemeker/endpoint_name.txt)
+          ENDPOINT_NAME=$(cat sagemaker/endpoint_name.txt)
           echo "ENDPOINT_NAME=$ENDPOINT_NAME" >> $GITHUB_ENV
       
       # - name: Next Step - Use Endpoint Name
