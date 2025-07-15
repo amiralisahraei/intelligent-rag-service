@@ -10,7 +10,7 @@ COPY . .
 # RUN pip install --no-cache-dir -r requirements.txt
 
 
-# Expose the port
+# Expose the port   
 EXPOSE 8000
 
 # Run the application using Uvicorn
