@@ -16,7 +16,7 @@ This project provides an end-to-end pipeline for **automated Retrieval-Augmented
 ```
 intelligent_rag_system/
 │
-├── sagemeker/
+├── sagemaker/
 │   ├── train.py                 # Fine-tuning script for SageMaker
 │   └── launch_training.py       # Launches training and deployment on SageMaker
 │
