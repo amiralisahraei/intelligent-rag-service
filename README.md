@@ -1,277 +1,183 @@
-# Automated RAG & LLM Fine-tuning System
+# Automated RAG and LLM Fine-Tuning
 
-A comprehensive Retrieval-Augmented Generation (RAG) system with LLM fine-tuning capabilities, built with FastAPI and integrated with AWS SageMaker for scalable machine learning inference.
+This project provides an end-to-end pipeline for **automated Retrieval-Augmented Generation (RAG) and Large Language Model (LLM) fine-tuning**, deployment, and serving using AWS SageMaker, FastAPI, and Kubernetes. It enables you to fine-tune LLMs on custom datasets, deploy them as scalable endpoints, and build a retrieval-augmented chatbot application.
 
-## 🚀 Features
+## Features
 
-- **Document Processing**: Automated PDF text extraction and chunking
-- **Vector Database**: Efficient semantic search using vector embeddings
-- **RAG Pipeline**: Context-aware question answering system
-- **AWS Integration**: SageMaker endpoint integration for LLM inference
-- **Cloud Storage**: S3 integration for document and data storage
-- **REST API**: FastAPI-based web service for easy integration
-- **Authentication**: AWS4Auth for secure API access
+- **Automated LLM Fine-Tuning:** Fine-tune Hugging Face models on your own datasets using SageMaker
+- **RAG Pipeline:** Integrate document retrieval with LLMs for context-aware question answering
+- **FastAPI Backend:** Serve your chatbot with a modern, async API
+- **Kubernetes Deployment:** Easily deploy and scale your FastAPI app on EKS
+- **CI/CD with GitHub Actions:** Automated workflow for training, deployment, and rolling updates
+- **Secure Secrets Management:** Endpoint names and credentials are managed via Kubernetes secrets
 
-## 📋 Table of Contents
+## Project Structure
 
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [API Documentation](#api-documentation)
-- [Architecture](#architecture)
-- [AWS Setup](#aws-setup)
-- [Development](#development)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
+```
+intelligent_rag_system/
+│
+├── sagemeker/
+│   ├── train.py                 # Fine-tuning script for SageMaker
+│   └── launch_training.py       # Launches training and deployment on SageMaker
+│
+├── src/
+│   ├── app.py                   # FastAPI application
+│   ├── utils.py                 # Utility functions (PDF parsing, vectorstore, LLM calls)
+│   └── test.py                  # Simple test script
+│
+├── kubernetes/
+│   ├── deployment.yaml          # K8s deployment manifest
+│   └── service.yaml             # K8s service manifest
+│
+├── requirements.txt             # Python dependencies
+├── Dockerfile                   # Docker image for FastAPI app
+└── .github/workflows/
+    └── example.yml              # GitHub Actions workflow
+```
 
-## 🔧 Installation
+## Prerequisites
 
-### Prerequisites
+- AWS account with SageMaker, ECR, and EKS permissions
+- Docker installed locally
+- Python 3.12+ environment
+- kubectl & AWS CLI configured
+- Kubernetes cluster (EKS) set up
 
-- Python 3.8 or higher
-- AWS Account with appropriate permissions
-- SageMaker endpoint deployed with a language model
+## Quick Start
 
-### Setup
+### 1. Fine-Tune and Deploy LLM on SageMaker
 
-1. **Clone the repository:**
+Edit your dataset and model parameters in `sagemeker/train.py` as needed.
+
+Launch training and deployment (automated in CI/CD, or manually):
+
 ```bash
-git clone <repository-url>
-cd rag-llm-system
+python launch_training.py
 ```
 
-2. **Create a virtual environment:**
+This will:
+- Fine-tune the model on your dataset
+- Deploy the model as a SageMaker endpoint
+- Output the endpoint name to `endpoint_name.txt`
+
+### 2. Build and Push the FastAPI Docker Image
+
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Build the Docker image
+docker build -t fastapi-app-new-image .
+
+# Tag for ECR
+docker tag fastapi-app-new-image:latest <your-aws-account-id>.dkr.ecr.<region>.amazonaws.com/fastapi-app-repo:latest
+
+# Push to ECR
+docker push <your-aws-account-id>.dkr.ecr.<region>.amazonaws.com/fastapi-app-repo:latest
 ```
 
-3. **Install dependencies:**
+### 3. Deploy to Kubernetes (EKS)
+
+Update your kubeconfig and apply manifests:
+
 ```bash
-pip install -r requirements.txt
+# Configure kubectl for your EKS cluster
+aws eks update-kubeconfig --region <region> --name <cluster-name>
+
+# Deploy the application
+kubectl apply -f kubernetes/deployment.yaml
+kubectl apply -f kubernetes/service.yaml
 ```
 
-4. **Install required packages:**
+### 4. Access the Chatbot API
+
+The FastAPI app exposes a `/llm` endpoint for question answering. Example request:
+
 ```bash
-pip install fastapi uvicorn groq python-dotenv requests requests-aws4auth boto3
+curl -X POST "http://<service-endpoint>/llm" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is Amirali'\''s email address?"}'
 ```
 
-## ⚙️ Configuration
+## API Endpoints
 
-### Environment Variables
-
-Create a `.env` file in the root directory:
-
-```env
-# AWS Configuration
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
-AWS_DEFAULT_REGION=us-east-1
-
-# SageMaker Configuration
-SAGEMAKER_ENDPOINT_NAME=huggingface-pytorch-inference-2025-07-13-15-08-32-113
-SAGEMAKER_REGION=us-east-1
-
-# S3 Configuration
-S3_BUCKET_NAME=amirkhan-sh-resume-bucket
-
-# Application Configuration
-PDF_PATH=Amirali_Sahraei_CV_OLD.pdf
-```
-
-### File Structure
-
-```
-project/
-├── main.py              # FastAPI application
-├── utils.py             # Utility functions
-├── requirements.txt     # Python dependencies
-├── .env                 # Environment variables
-├── Amirali_Sahraei_CV_OLD.pdf  # Sample PDF document
-└── README.md           # This file
-```
-
-## 🚀 Usage
-
-### Starting the Application
-
-1. **Run the FastAPI server:**
-```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-2. **Access the API:**
-   - API Base URL: `http://localhost:8000`
-   - Interactive Documentation: `http://localhost:8000/docs`
-   - OpenAPI Schema: `http://localhost:8000/openapi.json`
-
-### Making API Requests
-
-**Question Answering:**
-```bash
-curl -X POST "http://localhost:8000/llm" \
-     -H "Content-Type: application/json" \
-     -d '{"question": "What is the candidate's experience with machine learning?"}'
-```
-
-**Python Example:**
-```python
-import requests
-
-response = requests.post(
-    "http://localhost:8000/llm",
-    json={"question": "What programming languages does the candidate know?"}
-)
-print(response.json())
-```
-
-## 📚 API Documentation
-
-### Endpoints
-
-#### POST `/llm`
-Process a question using RAG pipeline and return LLM response.
+### POST /llm
+Submit a question to the RAG-enabled chatbot.
 
 **Request Body:**
 ```json
 {
-  "question": "string"
+  "question": "Your question here"
 }
 ```
 
 **Response:**
 ```json
 {
-  "answer": "string",
-  "context": "string",
-  "confidence": "float"
+  "answer": "Generated response based on retrieved context",
+  "status": "success"
 }
 ```
 
-**Example:**
-```bash
-curl -X POST "http://localhost:8000/llm" \
-     -H "Content-Type: application/json" \
-     -d '{"question": "What is the candidate'\''s educational background?"}'
-```
+## CI/CD Workflow
 
-## 🏗️ Architecture
+The GitHub Actions workflow (`.github/workflows/example.yml`) automates:
 
-### System Components
+1. Code checkout and dependency installation
+2. LLM training and deployment on SageMaker
+3. Extraction and propagation of the SageMaker endpoint name
+4. Docker image build and push to ECR
+5. Kubernetes deployment and secret management
 
-1. **Document Processing Pipeline**
-   - PDF text extraction
-   - Text chunking and preprocessing
-   - Vector embedding generation
+## Environment Variables & Secrets
 
-2. **Vector Database**
-   - Semantic search capabilities
-   - Context retrieval system
-   - Similarity matching
+- **ENDPOINT_NAME:** Set automatically from SageMaker deployment and injected into the FastAPI app via Kubernetes secret
+- **AWS Credentials:** Managed via GitHub Actions secrets for secure access to AWS services
 
-3. **RAG Pipeline**
-   - Context-aware prompt building
-   - Query processing
-   - Response generation
+## Customization
 
-4. **AWS Integration**
-   - SageMaker endpoint for LLM inference
-   - S3 for document storage
-   - AWS4Auth for authentication
+### Dataset Configuration
+Update the dataset path and preprocessing logic in `sagemeker/train.py` to work with your specific data format.
 
-### Data Flow
+### Model Selection
+Change the Hugging Face model identifier in `sagemeker/train.py` to use different base models for fine-tuning.
 
-```
-PDF Document → Text Extraction → Text Chunking → Vector Store
-                                                       ↓
-User Question → Context Retrieval → Prompt Building → LLM Inference → Response
-```
+### Prompting & Retrieval
+Customize prompt templates and retrieval logic in `src/utils.py` to optimize for your use case and document types.
 
-## ☁️ AWS Setup
+### Kubernetes Configuration
+Modify `kubernetes/deployment.yaml` and `kubernetes/service.yaml` to adjust resource limits, replica counts, and service configuration.
 
-### SageMaker Endpoint
+## Troubleshooting
 
-1. **Deploy a model to SageMaker:**
-```python
-import boto3
-sagemaker = boto3.client('sagemaker')
+### Common Issues
 
-# Deploy your model endpoint
-# Replace with your model configuration
-```
+**SageMaker Training Fails:**
+- Check AWS permissions and quotas
+- Verify dataset format and S3 bucket access
+- Review CloudWatch logs for detailed error messages
 
-2. **Update endpoint configuration:**
-```python
-endpoint_name = 'your-endpoint-name'
-url = f"https://runtime.sagemaker.{region}.amazonaws.com/endpoints/{endpoint_name}/invocations"
-```
+**Kubernetes Deployment Issues:**
+- Ensure ECR repository permissions are correctly set
+- Verify cluster autoscaling is enabled for resource demands
+- Check pod logs: `kubectl logs -f deployment/fastapi-app`
 
-### S3 Bucket Setup
+**API Connection Problems:**
+- Verify service endpoints with: `kubectl get services`
+- Check if load balancer is properly configured
+- Test internal connectivity first before external access
 
-1. **Create S3 bucket:**
-```bash
-aws s3 mb s3://your-bucket-name
-```
+## Performance Optimization
 
-2. **Configure bucket permissions:**
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::ACCOUNT-ID:root"
-            },
-            "Action": "s3:*",
-            "Resource": [
-                "arn:aws:s3:::your-bucket-name",
-                "arn:aws:s3:::your-bucket-name/*"
-            ]
-        }
-    ]
-}
-```
+- **Caching:** Implement Redis caching for frequently accessed documents
+- **Batch Processing:** Use batch inference for multiple questions
+- **Auto-scaling:** Configure horizontal pod autoscaling based on CPU/memory usage
+- **Model Optimization:** Consider model quantization for faster inference
 
-### IAM Permissions
+## Security Considerations
 
-Required permissions for the application:
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "sagemaker:InvokeEndpoint",
-                "s3:GetObject",
-                "s3:PutObject",
-                "s3:DeleteObject"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-```
+- All AWS credentials are managed through IAM roles and GitHub secrets
+- Kubernetes secrets are used for sensitive configuration
+- Consider implementing API rate limiting and authentication
+- Regular security updates for dependencies
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- FastAPI for the web framework
-- AWS SageMaker for ML model hosting
-- Groq for LLM capabilities
-- Community contributors and maintainers
-
-## 📞 Support
-
-For support and questions:
-- Open an issue on GitHub
-- Contact the development team
-- Check the documentation
-
----
-
-**Note**: This system is designed for educational and development purposes. For production use, implement additional security measures, error handling, and monitoring capabilities.
+MIT License - see LICENSE file for details
