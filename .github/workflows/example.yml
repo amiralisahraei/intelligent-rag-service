@@ -1,8 +1,8 @@
 name: Deploy to EKS
-on:
-  push:
-    branches:
-      - master
+# on:
+#   push:
+#     branches:
+#       - master
 
 jobs:
   deploy:
@@ -32,9 +32,9 @@ jobs:
           pip install -U sagemaker  
           pip install -U datasets
       
-      - name: train and deploy llm
+      - name: train and deploy llm using SageMaker
         run: |
-          python sagemeker/launch_training.py
+          python sagemaker/launch_training.py
 
       
       - name: Get Endpoint Name
@@ -42,10 +42,6 @@ jobs:
         run: |
           ENDPOINT_NAME=$(cat endpoint_name.txt)
           echo "ENDPOINT_NAME=$ENDPOINT_NAME" >> $GITHUB_ENV
-      
-      # - name: Next Step - Use Endpoint Name
-      #   run: |
-      #     echo "Endpoint name is: ${{ env.ENDPOINT_NAME }}"
 
       - name: Build Docker image
         run: |
