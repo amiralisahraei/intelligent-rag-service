@@ -6,10 +6,11 @@ This project provides an end-to-end pipeline for **automated Retrieval-Augmented
 
 - **Automated LLM Fine-Tuning:** Fine-tune Hugging Face models on your own datasets using SageMaker
 - **RAG Pipeline:** Integrate document retrieval with LLMs for context-aware question answering
-- **FastAPI Backend:** Serve your chatbot with a modern, async API
+- **FastAPI Backend:** Serve your chatbot with a modern, async API with JWT authentication support
 - **Kubernetes Deployment:** Easily deploy and scale your FastAPI app on EKS
 - **CI/CD with GitHub Actions:** Automated workflow for training, deployment, and rolling updates
 - **Secure Secrets Management:** Endpoint names and credentials are managed via Kubernetes secrets
+- **JWT Authentication:** Secure API endpoints with JSON Web Token authentication
 
 ## Project Structure
 
@@ -88,18 +89,36 @@ kubectl apply -f kubernetes/service.yaml
 
 ### 4. Access the Chatbot API
 
-The FastAPI app exposes a `/llm` endpoint for question answering. Example request:
+The FastAPI app exposes a `/llm` endpoint for question answering. The API supports JWT authentication for secure access.
 
+#### Without Authentication (if JWT is disabled):
 ```bash
 curl -X POST "http://<service-endpoint>/llm" \
   -H "Content-Type: application/json" \
   -d '{"question": "What is Amirali'\''s email address?"}'
 ```
 
+#### With JWT Authentication:
+```bash
+# First, obtain a JWT token (implementation-specific)
+TOKEN="your-jwt-token-here"
+
+curl -X POST "http://<service-endpoint>/llm" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"question": "What is Amirali'\''s email address?"}'
+```
+
 ## API Endpoints
 
 ### POST /llm
-Submit a question to the RAG-enabled chatbot.
+Submit a question to the RAG-enabled chatbot. Supports JWT authentication.
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <jwt-token>  # Optional, if JWT auth is enabled
+```
 
 **Request Body:**
 ```json
@@ -116,6 +135,32 @@ Submit a question to the RAG-enabled chatbot.
 }
 ```
 
+**Error Response (401 Unauthorized):**
+```json
+{
+  "detail": "Could not validate credentials"
+}
+```
+
+## Authentication
+
+### JWT Token Support
+The API supports JWT (JSON Web Token) authentication for secure access to endpoints. When JWT authentication is enabled:
+
+- Include the `Authorization: Bearer <token>` header in all API requests
+- Tokens should be obtained through your authentication system
+- Invalid or expired tokens will return a 401 Unauthorized response
+- JWT secret key and algorithm can be configured via environment variables
+
+### Configuration
+Set the following environment variables to configure JWT authentication:
+
+```bash
+JWT_SECRET_KEY=your-secret-key
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
 ## CI/CD Workflow
 
 The GitHub Actions workflow (`.github/workflows/example.yml`) automates:
@@ -129,6 +174,9 @@ The GitHub Actions workflow (`.github/workflows/example.yml`) automates:
 ## Environment Variables & Secrets
 
 - **ENDPOINT_NAME:** Set automatically from SageMaker deployment and injected into the FastAPI app via Kubernetes secret
+- **JWT_SECRET_KEY:** Secret key for JWT token signing and verification
+- **JWT_ALGORITHM:** Algorithm used for JWT encoding/decoding (default: HS256)
+- **JWT_ACCESS_TOKEN_EXPIRE_MINUTES:** Token expiration time in minutes
 - **AWS Credentials:** Managed via GitHub Actions secrets for secure access to AWS services
 
 ## Customization
@@ -144,6 +192,9 @@ Customize prompt templates and retrieval logic in `src/utils.py` to optimize for
 
 ### Kubernetes Configuration
 Modify `kubernetes/deployment.yaml` and `kubernetes/service.yaml` to adjust resource limits, replica counts, and service configuration.
+
+### Authentication Configuration
+Customize JWT settings in `src/app.py` to integrate with your existing authentication system or modify token validation logic.
 
 ## Troubleshooting
 
@@ -164,6 +215,12 @@ Modify `kubernetes/deployment.yaml` and `kubernetes/service.yaml` to adjust reso
 - Check if load balancer is properly configured
 - Test internal connectivity first before external access
 
+**JWT Authentication Issues:**
+- Verify JWT_SECRET_KEY is properly set in environment variables
+- Check token expiration and format
+- Ensure Authorization header is properly formatted: `Bearer <token>`
+- Review FastAPI logs for authentication-related errors
+
 ## Performance Optimization
 
 - **Caching:** Implement Redis caching for frequently accessed documents
@@ -175,8 +232,10 @@ Modify `kubernetes/deployment.yaml` and `kubernetes/service.yaml` to adjust reso
 
 - All AWS credentials are managed through IAM roles and GitHub secrets
 - Kubernetes secrets are used for sensitive configuration
-- Consider implementing API rate limiting and authentication
+- JWT authentication provides secure API access with token-based authorization
+- Consider implementing API rate limiting and additional authentication layers
 - Regular security updates for dependencies
+- Rotate JWT secret keys periodically for enhanced security
 
 ## License
 
